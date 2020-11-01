@@ -18,7 +18,9 @@
 #include "DSi.h"
 #include "GPU.h"
 #include "GPU3D.h"
+#ifdef LAN_PLAY
 #include "Wifi.h"
+#endif
 #include "NDSCart.h"
 #include "SPU.h"
 
@@ -992,8 +994,10 @@ int ClassifyAddress7(u32 addr)
             return memregion_WRAM7;
         case 0x04000000:
             return memregion_IO7;
+#ifdef LAN_PLAY
         case 0x04800000:
             return memregion_Wifi;
+#endif
         case 0x06000000:
         case 0x06800000:
             return memregion_VWRAM;
@@ -1001,7 +1005,7 @@ int ClassifyAddress7(u32 addr)
     }
     return memregion_Other;
 }
-
+#ifdef LAN_PLAY
 void WifiWrite32(u32 addr, u32 val)
 {
     Wifi::Write(addr, val & 0xFFFF);
@@ -1012,7 +1016,7 @@ u32 WifiRead32(u32 addr)
 {
     return (u32)Wifi::Read(addr) | ((u32)Wifi::Read(addr + 2) << 16);
 }
-
+#endif
 template <typename T>
 void VRAMWrite(u32 addr, T val)
 {
@@ -1148,6 +1152,7 @@ void* GetFuncForAddr(ARM* cpu, u32 addr, bool store, int size)
                 }
             }
             break;
+#ifdef LAN_PLAY
         case 0x04800000:
             if (addr < 0x04810000 && size >= 16)
             {
@@ -1160,6 +1165,7 @@ void* GetFuncForAddr(ARM* cpu, u32 addr, bool store, int size)
                 }
             }
             break;
+#endif
         case 0x06000000:
         case 0x06800000:
             switch (size | store)

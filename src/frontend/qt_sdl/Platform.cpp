@@ -27,8 +27,12 @@
 
 #include "Platform.h"
 #include "PlatformConfig.h"
+
+#ifdef LAN_PLAY
 #include "LAN_Socket.h"
 #include "LAN_PCap.h"
+#endif
+
 #include <string>
 
 #ifdef __WIN32__
@@ -305,6 +309,7 @@ void MP_DeInit()
 #endif // __WIN32__
 }
 
+#ifdef LAN_PLAY
 int MP_SendPacket(u8* data, int len)
 {
     if (MPSocket < 0)
@@ -374,7 +379,6 @@ int MP_RecvPacket(u8* data, bool block)
 }
 
 
-
 bool LAN_Init()
 {
     if (Config::DirectLAN)
@@ -417,6 +421,6 @@ int LAN_RecvPacket(u8* data)
     else
         return LAN_Socket::RecvPacket(data);
 }
-
+#endif
 
 }

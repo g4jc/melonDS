@@ -20,7 +20,9 @@
 #include <string.h>
 #include "DSi.h"
 #include "DSi_SD.h"
+#ifdef LAN_PLAY
 #include "DSi_NWifi.h"
+#endif
 #include "Platform.h"
 #include "Config.h"
 
@@ -137,9 +139,11 @@ void DSi_SDHost::Reset()
     }
     else
     {
+	#ifdef LAN_PLAY
         DSi_NWifi* nwifi = new DSi_NWifi(this);
 
         Ports[0] = nwifi;
+	#endif
     }
 
     if (Ports[0]) Ports[0]->Reset();

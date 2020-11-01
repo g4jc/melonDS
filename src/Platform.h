@@ -79,6 +79,7 @@ void Semaphore_Post(void* sema);
 
 void* GL_GetProcAddress(const char* proc);
 
+#ifdef LAN_PLAY
 // local multiplayer comm interface
 // packet type: DS-style TX header (12 bytes) + original 802.11 frame
 bool MP_Init();
@@ -92,6 +93,7 @@ bool LAN_Init();
 void LAN_DeInit();
 int LAN_SendPacket(u8* data, int len);
 int LAN_RecvPacket(u8* data);
+#endif
 
 }
 

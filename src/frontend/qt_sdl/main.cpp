@@ -39,7 +39,9 @@
 #include "InputConfigDialog.h"
 #include "VideoSettingsDialog.h"
 #include "AudioSettingsDialog.h"
+#ifdef LAN_PLAY
 #include "WifiSettingsDialog.h"
+#endif
 
 #include "types.h"
 #include "version.h"
@@ -54,7 +56,9 @@
 #endif
 #include "GPU.h"
 #include "SPU.h"
+#ifdef LAN_PLAY
 #include "Wifi.h"
+#endif
 #include "Platform.h"
 #include "Config.h"
 #include "PlatformConfig.h"
@@ -1108,9 +1112,10 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
         actAudioSettings = menu->addAction("Audio settings");
         connect(actAudioSettings, &QAction::triggered, this, &MainWindow::onOpenAudioSettings);
 
+#ifdef LAN_PLAY
         actWifiSettings = menu->addAction("Wifi settings");
         connect(actWifiSettings, &QAction::triggered, this, &MainWindow::onOpenWifiSettings);
-
+#endif
         {
             QMenu* submenu = menu->addMenu("Savestate settings");
 
@@ -1800,7 +1805,7 @@ void MainWindow::onAudioSettingsFinished(int res)
             Frontend::Mic_SetExternalBuffer(NULL, 0);
     }
 }
-
+#ifdef LAN_PLAY
 void MainWindow::onOpenWifiSettings()
 {
     emuThread->emuPause();
@@ -1825,7 +1830,7 @@ void MainWindow::onWifiSettingsFinished(int res)
 
     emuThread->emuUnpause();
 }
-
+#endif
 void MainWindow::onChangeSavestateSRAMReloc(bool checked)
 {
     Config::SavestateRelocSRAM = checked?1:0;

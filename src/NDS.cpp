@@ -29,7 +29,9 @@
 #include "SPU.h"
 #include "SPI.h"
 #include "RTC.h"
+#ifdef LAN_PLAY
 #include "Wifi.h"
+#endif
 #include "AREngine.h"
 #include "Platform.h"
 
@@ -126,7 +128,9 @@ u8 PostFlag7;
 u16 PowerControl9;
 u16 PowerControl7;
 
+#ifdef LAN_PLAY
 u16 WifiWaitCnt;
+#endif
 
 u16 ARM7BIOSProt;
 
@@ -164,7 +168,9 @@ bool RunningGame;
 void DivDone(u32 param);
 void SqrtDone(u32 param);
 void RunTimer(u32 tid, s32 cycles);
+#ifdef LAN_PLAY
 void SetWifiWaitCnt(u16 val);
+#endif
 void SetGBASlotTimings();
 
 
@@ -199,8 +205,9 @@ bool Init()
     if (!SPU::Init()) return false;
     if (!SPI::Init()) return false;
     if (!RTC::Init()) return false;
+#ifdef LAN_PLAY
     if (!Wifi::Init()) return false;
-
+#endif
     if (!DSi::Init()) return false;
 
     if (!AREngine::Init()) return false;
@@ -229,8 +236,9 @@ void DeInit()
     SPU::DeInit();
     SPI::DeInit();
     RTC::DeInit();
+#ifdef LAN_PLAY
     Wifi::DeInit();
-
+#endif
     DSi::DeInit();
 
     AREngine::DeInit();
@@ -438,9 +446,9 @@ void SetupDirectBoot()
     NDSCart::SPICnt = 0x8000;
 
     SPU::SetBias(0x200);
-
+#ifdef LAN_PLAY
     SetWifiWaitCnt(0x0030);
-
+#endif
     ARM7BIOSProt = 0x1204;
 
     SPI_Firmware::SetupDirectBoot();
@@ -547,9 +555,10 @@ void Reset()
     PostFlag7 = 0x00;
     PowerControl9 = 0x0001;
     PowerControl7 = 0x0001;
-
+#ifdef LAN_PLAY
     WifiWaitCnt = 0xFFFF; // temp
     SetWifiWaitCnt(0);
+#endif
 
     ARM7BIOSProt = 0;
 
@@ -590,7 +599,9 @@ void Reset()
     SPU::Reset();
     SPI::Reset();
     RTC::Reset();
+#ifdef LAN_PLAY
     Wifi::Reset();
+#endif
 
     if (ConsoleType == 1)
     {
@@ -626,7 +637,9 @@ bool DoSavestate_Scheduler(Savestate* file)
     {
         GPU::StartScanline, GPU::StartHBlank, GPU::FinishFrame,
         SPU::Mix,
+#ifdef LAN_PLAY
         Wifi::USTimer,
+#endif
 
         GPU::DisplayFIFO,
         NDSCart::ROMPrepareData, NDSCart::ROMEndTransfer,
@@ -718,9 +731,9 @@ bool DoSavestate(Savestate* file)
     file->VarArray(ExMemCnt, 2*sizeof(u16));
     file->VarArray(ROMSeed0, 2*8);
     file->VarArray(ROMSeed1, 2*8);
-
+#ifdef LAN_PLAY
     file->Var16(&WifiWaitCnt);
-
+#endif
     file->VarArray(IME, 2*sizeof(u32));
     file->VarArray(IE, 2*sizeof(u32));
     file->VarArray(IF, 2*sizeof(u32));
@@ -785,10 +798,11 @@ bool DoSavestate(Savestate* file)
 
         InitTimings();
         SetGBASlotTimings();
-
+#ifdef LAN_PLAY
         u16 tmp = WifiWaitCnt;
         WifiWaitCnt = 0xFFFF;
         SetWifiWaitCnt(tmp); // force timing table update
+#endif
     }
 
     for (int i = 0; i < 8; i++)
@@ -803,8 +817,9 @@ bool DoSavestate(Savestate* file)
     SPU::DoSavestate(file);
     SPI::DoSavestate(file);
     RTC::DoSavestate(file);
+#ifdef LAN_PLAY
     Wifi::DoSavestate(file);
-
+#endif
     if (!file->Saving)
     {
         GPU::SetPowerCnt(PowerControl9);
@@ -1180,7 +1195,7 @@ void MapSharedWRAM(u8 val)
     }
 }
 
-
+#ifdef LAN_PLAY
 void SetWifiWaitCnt(u16 val)
 {
     if (WifiWaitCnt == val) return;
@@ -1191,7 +1206,7 @@ void SetWifiWaitCnt(u16 val)
     SetARM7RegionTimings(0x04800000, 0x04808000, 16, ntimings[val & 0x3], (val & 0x4) ? 4 : 6);
     SetARM7RegionTimings(0x04808000, 0x04810000, 16, ntimings[(val>>3) & 0x3], (val & 0x20) ? 4 : 10);
 }
-
+#endif
 void SetGBASlotTimings()
 {
     int curcpu = (ExMemCnt[0] >> 7) & 0x1;
@@ -2370,13 +2385,14 @@ u16 ARM7Read16(u32 addr)
 
     case 0x04000000:
         return ARM7IORead16(addr);
-
+#ifdef LAN_PLAY
     case 0x04800000:
         if (addr < 0x04810000)
         {
             return Wifi::Read(addr);
         }
         break;
+#endif
 
     case 0x06000000:
     case 0x06800000:
@@ -2437,14 +2453,14 @@ u32 ARM7Read32(u32 addr)
 
     case 0x04000000:
         return ARM7IORead32(addr);
-
+#ifdef LAN_PLAY
     case 0x04800000:
         if (addr < 0x04810000)
         {
             return Wifi::Read(addr) | (Wifi::Read(addr+2) << 16);
         }
         break;
-
+#endif
     case 0x06000000:
     case 0x06800000:
         return GPU::ReadVRAM_ARM7<u32>(addr);
@@ -2586,7 +2602,7 @@ void ARM7Write16(u32 addr, u16 val)
     case 0x04000000:
         ARM7IOWrite16(addr, val);
         return;
-
+#ifdef LAN_PLAY
     case 0x04800000:
         if (addr < 0x04810000)
         {
@@ -2594,7 +2610,7 @@ void ARM7Write16(u32 addr, u16 val)
             return;
         }
         break;
-
+#endif
     case 0x06000000:
     case 0x06800000:
 #ifdef JIT_ENABLED
@@ -2670,7 +2686,7 @@ void ARM7Write32(u32 addr, u32 val)
     case 0x04000000:
         ARM7IOWrite32(addr, val);
         return;
-
+#ifdef LAN_PLAY
     case 0x04800000:
         if (addr < 0x04810000)
         {
@@ -2679,7 +2695,7 @@ void ARM7Write32(u32 addr, u32 val)
             return;
         }
         break;
-
+#endif
     case 0x06000000:
     case 0x06800000:
 #ifdef JIT_ENABLED
@@ -3601,7 +3617,9 @@ u16 ARM7IORead16(u32 addr)
     case 0x040001C2: return SPI::ReadData();
 
     case 0x04000204: return ExMemCnt[1];
+#ifdef LAN_PLAY
     case 0x04000206: return WifiWaitCnt;
+#endif
 
     case 0x04000208: return IME[1];
     case 0x04000210: return IE[1] & 0xFFFF;
@@ -3882,9 +3900,11 @@ void ARM7IOWrite16(u32 addr, u16 val)
         ExMemCnt[1] = (ExMemCnt[1] & 0xFF80) | (val & 0x007F);
         SetGBASlotTimings();
         return;
+#ifdef LAN_PLAY
     case 0x04000206:
         SetWifiWaitCnt(val);
         return;
+#endif
 
     case 0x04000208: IME[1] = val & 0x1; UpdateIRQ(1); return;
     case 0x04000210: IE[1] = (IE[1] & 0xFFFF0000) | val; UpdateIRQ(1); return;

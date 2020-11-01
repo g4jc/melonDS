@@ -44,6 +44,10 @@ if (ENABLE_JIT)
 	add_definitions(-DJIT_ENABLED)
 endif()
 
+if (USE_LAN_PLAY)
+  add_definitions(-DLAN_PLAY)
+endif()
+
 if (CMAKE_BUILD_TYPE STREQUAL Release)
 	option(ENABLE_LTO "Enable link-time optimization" ON)
 else()

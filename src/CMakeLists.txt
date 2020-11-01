@@ -20,7 +20,6 @@ add_library(core STATIC
 	DSi_Camera.cpp
 	DSi_I2C.cpp
 	DSi_NDMA.cpp
-	DSi_NWifi.cpp
 	DSi_SD.cpp
 	DSi_SPI_TSC.cpp
 	FIFO.h
@@ -40,12 +39,17 @@ add_library(core STATIC
 	SPU.cpp
 	types.h
 	version.h
-	Wifi.cpp
-	WifiAP.cpp
-
 	tiny-AES-c/aes.c
 	xxhash/xxhash.c
 )
+
+if (USE_LAN_PLAY)
+list(APPEND STATIC
+	Wifi.cpp
+	WifiAP.cpp
+	DSi_NWifi.cpp
+)
+endif()
 
 if (ENABLE_OGLRENDERER)
 	target_sources(core PRIVATE
