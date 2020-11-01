@@ -3,7 +3,8 @@
 #elif defined(_WIN32)
 #include <windows.h>
 #else
-#include <sys/mman.h>
+#include <sys/syscall.h>
+#include <linux/memfd.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -631,7 +632,7 @@ void Init()
 
     MemoryBase = (u8*)mmap(NULL, MemoryTotalSize, PROT_NONE, MAP_ANON | MAP_PRIVATE, -1, 0);
 
-    MemoryFile = memfd_create("melondsfastmem", 0);
+    MemoryFile = syscall(SYS_memfd_create, "melondsfastmemo", MFD_CLOEXEC);
     ftruncate(MemoryFile, MemoryTotalSize);
 
     NewSa.sa_flags = SA_SIGINFO;
